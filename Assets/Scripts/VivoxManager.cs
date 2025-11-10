@@ -62,6 +62,25 @@ public class VivoxManager : MonoBehaviour
        
     }
     [Button]
+    public async Task JoinVoiceChannel(string textChannelName = "CH1")
+    {
+        if (!VivoxService.Instance.IsLoggedIn) return;
+        try
+        {
+            await VivoxService.Instance.JoinGroupChannelAsync(textChannelName, ChatCapability.AudioOnly);
+
+           // await VivoxService.Instance.JoinEchoChannelAsync(textChannelName, ChatCapability.AudioOnly);
+
+            Debug.Log("Te uniste al canal : " + textChannelName);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogException(ex);
+        }
+
+    }
+    #region TextStuff
+    [Button]
     public async Task LeaveTextChannel(string textChannelName = "CH1")
     {
         try
@@ -179,4 +198,68 @@ public class VivoxManager : MonoBehaviour
     {
         Debug.Log("Login Successfull ... ");
     }
+    #endregion
+
+
+
+
+    [Button]
+    public void SetMicVolume(int volumeDb)
+    {
+        VivoxService.Instance.SetInputDeviceVolume(volumeDb);
+    }
+    [Button]
+    public void SetOutputVolume(int volumeDb)
+    {
+        VivoxService.Instance.SetOutputDeviceVolume(volumeDb);
+    }
+
+    [Button]
+    public void SetParticipantVolume(string channelID, string username , int volume = 15)// -50  +50
+    {
+        VivoxParticipant participant = 
+            VivoxService.Instance.ActiveChannels.FirstOrDefault(x => x.Key.Equals(channelID))
+            .Value.FirstOrDefault(x => x.PlayerId.Equals(username));
+
+
+        participant.SetLocalVolume(volume);
+    }
+
+    [Button]
+    public async void SelectInputDevice(string deviceId)
+    {
+        List<VivoxInputDevice> inputs =  VivoxService.Instance.AvailableInputDevices.ToList();
+
+        VivoxInputDevice input = inputs.Find(x => x.DeviceID.Equals(deviceId));
+
+        await VivoxService.Instance.SetActiveInputDeviceAsync(input);
+    }
+    [Button]
+    public async void SelectOutputDevice(string deviceId)
+    {
+        List<VivoxOutputDevice> inputs = VivoxService.Instance.AvailableOutputDevices.ToList();
+
+        VivoxOutputDevice input = inputs.Find(x => x.DeviceID.Equals(deviceId));
+
+        await VivoxService.Instance.SetActiveOutputDeviceAsync(input);
+    }
+    [Button]
+    public void ShowInputDevices()
+    {
+        foreach (var device in VivoxService.Instance.AvailableInputDevices)
+        {
+            Debug.Log("Input: " + device.DeviceName + "ID: " + device.DeviceID);
+        }
+    
+    }
+    [Button]
+    public void ShowOutputDevices()
+    {
+        foreach (var device in VivoxService.Instance.AvailableOutputDevices)
+        {
+            Debug.Log("Input: " + device.DeviceName + "ID: " + device.DeviceID);
+        }
+
+    }
+
 }
